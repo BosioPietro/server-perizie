@@ -1,7 +1,7 @@
 import { Express, Request, Response } from "express";
 import { MongoDriver } from "@bosio/mongodriver";
 import { DecifraToken, ControllaAdmin } from "../encrypt.js";
-import { CaricaImmagine, DataInStringa, StringaInData } from "../funzioni.js";
+import { CaricaImmagine, DataInStringa, StringaInData, CaricaImmagineBase64 } from "../funzioni.js";
 import { RispondiToken } from "../strumenti.js";
 import { UploadApiResponse } from "cloudinary";
 import env from "../ambiente.js";
@@ -123,6 +123,21 @@ const CaricaImmagineProfilo = (app: Express) => {
 
         RispondiToken(res, token, {url : caricata["secure_url"]})
     })
+}
+
+const CaricaImmagineBase64string = (app: Express) => {
+    app.post("/api/carica-immagine-perizia-base64", async (req: Request, res: Response) => {
+        const immagine: string = req["body"].img;
+        console.log(immagine);
+        const caricata = await CaricaImmagineBase64(immagine);
+
+        if(caricata["errore"]){
+            res.status(500).send(caricata["errore"]);
+            return;
+        }
+        else res.send(caricata)
+    })
+
 }
 
 const ResetImmagineProfilo = (app: Express) => {
@@ -350,4 +365,4 @@ export { PrendiUtenti, EliminaUtenti, ControllaAdmin, AggiornaUtente,
          PrendiPerizia, PrendiOperatore, EliminaPerizia, PrendiIndirizzi,
          IndirizzoDaCoordinate, ModificaPerizia, CaricaImmaginePerizia,
          PrendiOperatori, PrendiPerizie, InfoUtente, StatisticheAdmin,
-         PerizieUtente, PrendiConfigGrafici};
+         PerizieUtente, PrendiConfigGrafici, CaricaImmagineBase64string };

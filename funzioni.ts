@@ -51,4 +51,4 @@ const StringaInData = (data: string) => {
     return new Date(anno, mese - 1, giorno);
 }
 
-export { DataInStringa, StringaInData, CaricaImmagine}
+export { DataInStringa, StringaInData, CaricaImmagine, CaricaImmagineBase64 }

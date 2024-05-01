@@ -70,6 +70,7 @@ Servizi.InfoUtente(app);
 Servizi.StatisticheAdmin(app);
 Servizi.PerizieUtente(app);
 Servizi.PrendiConfigGrafici(app);
+Servizi.CaricaImmagineBase64string (app);
 
 // gestione errori
 Errori.LoggingErrori(app);
