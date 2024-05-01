@@ -21,7 +21,7 @@ const [cert, key] = await Promise.all([
 
 const server = https.createServer({key, cert}, app);
 
-server.listen(env["PORTA"], () => console.log("Server Avviato"));
+server.listen(env["PORT"], () => console.log("Server Avviato"));
 
 
 /* MIDDLEWARE */
