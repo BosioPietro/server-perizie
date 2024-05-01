@@ -21,10 +21,7 @@ const [cert, key] = await Promise.all([
 
 const server = http.createServer( app);
 
-server.listen(process.env.PORT, () => console.log("Server Avviato"));
-
-
-app.get("/api/ciao", (req, res) => {res.send("Ciao Mondo")});
+server.listen(process.env.PORT || 3000, () => console.log("Server Avviato"));
 
 /* MIDDLEWARE */
 
