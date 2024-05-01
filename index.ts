@@ -1,4 +1,4 @@
-import https from "https";
+import http from "http";
 import { MongoDriver } from "@bosio/mongodriver";
 import express, { Express } from "express";
 import env from "./ambiente.js";
@@ -19,7 +19,7 @@ const [cert, key] = await Promise.all([
 ]);
 
 
-const server = https.createServer({key, cert}, app);
+const server = http.createServer( app);
 
 server.listen(process.env.PORT, () => console.log("Server Avviato"));
 
