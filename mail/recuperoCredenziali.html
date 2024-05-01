@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recupera il tuo accesso a Rilievi & Perizie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .logo {
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .content {
+            margin-top: 20px;
+        }
+
+        .p {
+            margin-bottom: 10px;
+        }
+
+        .strong {
+            font-weight: bold;
+        }
+
+        .code {
+            font-family: monospace;
+            font-size: 18px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            text-align: center;
+            /* Center align the code */
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Recupera il tuo accesso a Rilievi & Perizie</h1>
+            <img src="https://logo.com/" alt="Logo [Nome sito web]" class="logo">
+        </div>
+        <div class="content">
+            <p>Ciao ${username},</p>
+            <p>Abbiamo ricevuto una richiesta di recupero accesso per il tuo account.</p>
+            <p>Utilizza il seguente codice per confermare la tua identità e impostare una nuova password:</p>
+            <p class="strong">
+                <span class="code">${codice}</span>
+            </p>
+            <p>Questo codice è valido per 30 minuti. Se non riesci a utilizzarlo in tempo, richiedi un nuovo codice.</p>
+            <p>Se ritieni che questa richiesta non sia stata effettuata da te, ignora questa email e contatta il nostro
+                servizio di assistenza.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; Rilievi & Perizie - Tutti i diritti riservati</p>
+        </div>
+    </div>
+</body>
+
+</html>
