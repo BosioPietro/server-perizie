@@ -24,6 +24,8 @@ const server = https.createServer({key, cert}, app);
 server.listen(env["PORT"], () => console.log("Server Avviato"));
 
 
+app.get("/api/ciao", (req, res) => {res.send("Ciao Mondo")});
+
 /* MIDDLEWARE */
 
 // gestione delle richieste
