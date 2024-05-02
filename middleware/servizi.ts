@@ -35,7 +35,7 @@ const CaricaPerizieDB = (app: Express) => {
 
         const aggiunte = await driver.UpdateUno(
             { _id : driver.ID(_id) },
-            { $set: { "immagini" : perizia["immagini"] }}
+            { $set: { "immagini" : perizia["immagini"], "elaborata" : true }}
         );
         if(driver.Errore(aggiunte, res)) return;
 
