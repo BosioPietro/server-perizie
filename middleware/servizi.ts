@@ -33,7 +33,10 @@ const CaricaPerizieDB = (app: Express) => {
         const _id = perizia["_id"];
         delete perizia["_id"];
 
-        const aggiunte = await driver.Replace({ _id : driver.ID(_id) }, perizia);
+        const aggiunte = await driver.UpdateUno(
+            { _id : driver.ID(_id) },
+            { $set: { "immagini" : perizia["immagini"] }}
+        );
         if(driver.Errore(aggiunte, res)) return;
 
         RispondiToken(res, token, aggiunte)
@@ -364,6 +367,7 @@ const PrendiConfigGrafici = (app: Express) => {
 
         if(driver.Errore(perizie, res) || driver1.Errore(utenti, res)) return;
 
+        perizie = perizie.filter((p: Record<string, any>) => p["data"])
         perizie = perizie.map((p: Record<string, any>) => Object.assign(p, { data: StringaInData(p["data"]) }));
         perizie = perizie.filter((p: Record<string, any>) => (new Date().getTime() - p["data"].getTime()) < 40 * 24 * 60 * 60 * 1000);
 
