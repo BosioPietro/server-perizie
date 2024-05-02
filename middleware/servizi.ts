@@ -33,7 +33,7 @@ const CaricaPerizieDB = (app: Express) => {
         const _id = perizia["_id"];
         delete perizia["_id"];
 
-        const aggiunte = await driver.Replace({ _id }, perizia);
+        const aggiunte = await driver.Replace({ _id : driver.ID(_id) }, perizia);
         if(driver.Errore(aggiunte, res)) return;
 
         RispondiToken(res, token, aggiunte)
