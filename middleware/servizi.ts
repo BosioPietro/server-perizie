@@ -20,6 +20,23 @@ const PrendiUtenti = (app: Express) => {
     })
 }
 
+const CaricaPerizieDB = (app: Express) => {
+    app.post("/api/carica-perizie-db", async (req: Request, res: Response) => {
+        const perizia = req.body.perizia;
+        console.log(perizia);
+        const token = DecifraToken(req.headers.authorization!);
+
+        if(!(await ControllaAdmin(token, res))) return;
+
+        const driver = new MongoDriver(env["STR_CONN"], env["DB_NAME"], "perizie");
+
+        const aggiunte = await driver.UpdateUno({"_id": perizia["_id"]}, {"$set": perizia}, true);
+        if(driver.Errore(aggiunte, res)) return;
+
+        RispondiToken(res, token, aggiunte)
+    })
+}
+
 const StatisticheAdmin = (app: Express) => {
     app.get("/api/statistiche-admin", async (req: Request, res: Response) => {
         const token = DecifraToken(req.headers.authorization!);
@@ -365,4 +382,5 @@ export { PrendiUtenti, EliminaUtenti, ControllaAdmin, AggiornaUtente,
          PrendiPerizia, PrendiOperatore, EliminaPerizia, PrendiIndirizzi,
          IndirizzoDaCoordinate, ModificaPerizia, CaricaImmaginePerizia,
          PrendiOperatori, PrendiPerizie, InfoUtente, StatisticheAdmin,
-         PerizieUtente, PrendiConfigGrafici, CaricaImmagineBase64string };
+         PerizieUtente, PrendiConfigGrafici, CaricaImmagineBase64string,
+         CaricaPerizieDB };
