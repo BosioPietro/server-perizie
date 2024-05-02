@@ -9,7 +9,7 @@ const CifraPwd = (password: string): string => bcrypt.hashSync(password, 10);
 
 const ConfrontaPwd = (password: string, hash: string) : boolean => bcrypt.compareSync(password, hash);
 
-const CreaToken = (utente : {username : string, _id? : string, iat? : number, "2FA"?: boolean}) : string => {
+const CreaToken = (utente : {username : string, _id? : string, iat? : number, "2FA"?: boolean, assuntoIl?: string, deveCambiare?: boolean}) : string => {
     const secondi = Math.floor(new Date().getTime() / 1000);
     const durata = env["DURATA_TOKEN"];
     
@@ -23,6 +23,15 @@ const CreaToken = (utente : {username : string, _id? : string, iat? : number, "2
     if(utente["2FA"] != undefined)
     {
         payload["2FA"] = utente["2FA"];   
+    }
+    if(utente["assuntoIl"] != undefined)
+    {
+        payload["dataCreazione"] = utente["assuntoIl"];
+    }
+
+    if(utente["deveCambiare"] != undefined)
+    {
+        payload["deveCambiare"] = utente["deveCambiare"];
     }
     
     return jwt.sign(payload, env["ENCRYPTION_KEY"]);
@@ -57,7 +66,7 @@ const ControllaToken = (req : Request, res : Response, next? : NextFunction) => 
     })
 }
 
-type Token = { username : string, _id? : string, iat? : number, "2FA"?: boolean }
+type Token = { username : string, _id? : string, iat? : number, "2FA"?: boolean, assuntoIl?: string, deveCambiare?: boolean }
 const DecifraToken = (token : string) => jwt.decode(token) as Token;
 
 const GeneraPassword = () : string => {

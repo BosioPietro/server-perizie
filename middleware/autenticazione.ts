@@ -6,9 +6,6 @@ import { InviaMailNuovaPassword, InviaMailPasswordCambiata, InviaMailRecupero } 
 import { RispondiToken } from "../strumenti.js";
 import { DataInStringa, StringaInData } from "../funzioni.js";
 import env from "../ambiente.js"
-import Twilio from "twilio";
-
-const smsClient = Twilio(env.TWILIO_API_SID, env.TWILIO_API_SECRET)
 
 const RegistraUtente = async (app : Express) => {
     app.post("/api/registrazione", async (req : Request, res : Response) => {
@@ -56,15 +53,21 @@ const LoginUtente = async (app : Express) => {
     
         if(ConfrontaPwd(password, user["password"]))
         {
-            const dataToken: any = { username: user["username"], _id : user["_id"].toString() }
+            const dataToken: any = { 
+                username: user["username"], 
+                _id : user["_id"].toString(), 
+                assuntoIl : user["assuntoIl"],
+                deveCambiare : user["cambioPwd"] 
+            }
+
             if(user["ruolo"] == "Admin" || user["2FA"]){
-                dataToken["2FA"] = true;   
+                dataToken["2FA"] = false;   
             }
 
             const risposta: Record<string, any> = { "deveCambiare" : user["cambioPwd"] }
             if(user["ruolo"] == "Admin" || user["2FA"])
             {
-                risposta["2FA"] = true;   
+                risposta["2FA"] = false;   
             }
 
             RispondiToken(res, dataToken, risposta)
@@ -72,6 +75,7 @@ const LoginUtente = async (app : Express) => {
         else return res.status(401).send("Password errata");
     });   
 }
+
 
 const LoginOAuth = async (app : Express) => {
     app.post("/api/login-oauth", async (req : Request, res : Response) => {
@@ -85,15 +89,21 @@ const LoginOAuth = async (app : Express) => {
         if(driver.Errore(user, res)) return;
         if(!user) return res.status(400).send("Utente non autorizzato");
 
-        const dataToken: any = { username: user["username"], _id : user["_id"].toString() }
+        const dataToken: any = { 
+            username: user["username"], 
+            _id : user["_id"].toString(), 
+            assuntoIl : user["assuntoIl"],
+            deveCambiare : user["cambioPwd"] 
+        }
+        
         if(user["ruolo"] == "Admin" || user["2FA"]){
-            dataToken["2FA"] = true;   
+            dataToken["2FA"] = false;   
         }
 
         const risposta: Record<string, any> = { "deveCambiare" : user["cambioPwd"] }
         if(user["ruolo"] == "Admin" || user["2FA"])
         {
-            risposta["2FA"] = true;   
+            risposta["2FA"] = false;   
         }
 
         RispondiToken(res, dataToken, risposta)
@@ -121,6 +131,8 @@ const CambiaPassword = (app: Express) => {
         const data = await driver.Replace({ username }, user)
         if(driver.Errore(data, res)) return;
 
+        delete payload["deveCambiare"]
+
         InviaMailPasswordCambiata(user["username"], user["email"])
         .then(() => RispondiToken(res, payload, { "ok" : "Password Cambiata" }))
         .catch(() => RispondiToken(res, payload, `Errore nell'invio della mail`, 500))
@@ -138,7 +150,7 @@ const RecuperoCredenziali = (app: Express) =>{
         
         const dataToken: any = { username: user["username"], _id : user["_id"].toString() }
         if(user["ruolo"] == "Admin" || user["2FA"]){
-            dataToken["2FA"] = true;   
+            dataToken["2FA"] = false;   
         }
 
         if(!user) return RispondiToken(res, dataToken, `User non esistente`, 400)
@@ -150,16 +162,13 @@ const RecuperoCredenziali = (app: Express) =>{
             codice
         }
 
-        console.log(user, recupero)
-
         const data = await driver.Replace({ email }, { ...user, recupero })
         console.log(data)
         if(driver.Errore(data, res)) return;
 
-        RispondiToken(res, dataToken, { "ok" : "Recupero effettuato" })
-        // InviaMailRecupero(email, user["username"], codice)
-        // .then(() => RispondiToken(res, dataToken, { "ok" : "Email inviata" }))
-        // .catch(() => RispondiToken(res, dataToken, `Errore nell'invio della mail`, 500))
+        InviaMailRecupero(email, user["username"], codice)
+        .then(() => RispondiToken(res, dataToken, { "ok" : "Email inviata" }))
+        .catch(() => RispondiToken(res, dataToken, `Errore nell'invio della mail`, 500))
     })
 }
 
@@ -195,8 +204,6 @@ const VerificaCodice = (app: Express) => {
 
         if(!user["recupero"]) return RispondiToken(res, payload, `Recupero non richiesto`, 400)
 
-        console.log(user)
-
         const { recupero } = user;
         const oggi = new Date();
         const dataRichiesta = StringaInData(recupero["data"])
@@ -207,12 +214,12 @@ const VerificaCodice = (app: Express) => {
             
             const info = await driver.Replace({ username }, user)
             if(driver.Errore(info, res)) return;
-            RispondiToken(res, payload, `Tempo scaduto`, 400)
+            RispondiToken(res, payload, `Tempo scaduto`, 410)
             return;
         }
 
         if(codice !== recupero["codice"]){
-            RispondiToken(res, payload, `Codice errato`, 400)
+            RispondiToken(res, payload, `Codice errato`, 411)
             return;
         }
 
@@ -234,24 +241,40 @@ const InviaCodiceTelefono = (app: Express) => {
         if(user["ruolo"] != "Admin" && !user["2FA"]){
             RispondiToken(res, payload, `La verifica telefonica è disabilitata per questo utente`, 401)
             return;
-        }
+        }  
 
-        if(user["telefono"]){
+        if(!user["telefono"]){
             RispondiToken(res, payload, `Numero di telefono non fornito`, 401)
             return;
         }
 
-        await smsClient.verify.v2.services('VA6fa29582cf50c72a6659a369a38ea1fc')
-                .verifications
-                .create({to: `+39${user["telefono"]}`, channel: 'sms'})
+        const url = `https://verify.twilio.com/v2/Services/VA9774fb566b94ad1bccbb6f7a7ae94698/Verifications`;
+        const options = {
+            method: 'POST',
+            headers: {
+                Authorization: `Basic ${btoa(env["TWILIO_API_SID"] + ':' + env["TWILIO_API_SECRET"])}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                To: '+39' + user["telefono"],
+                Channel: 'sms'
+            })
+        };
 
-        user["Codice2FA"] = true;
-        delete user["_id"]
-
-        const data = await driver.Replace({ username }, user)
-        if(driver.Errore(data, res)) return;
-
-        RispondiToken(res, payload, { ris : "ok"})
+        fetch(url, options)
+        .then((response) => response.json())
+        .then(async (verification) => {
+            user["recupero"] = {
+                data: verification["date_created"],
+                sid: verification["sid"]
+            }
+            
+            const data = await driver.Replace({ username }, user)
+            if(driver.Errore(data, res)) return;
+    
+            RispondiToken(res, payload, { ris : "ok"})
+        })
+        .catch(() => RispondiToken(res, payload, `Errore nell'invio del codice`, 500))
     })
 }
 
@@ -268,26 +291,42 @@ const VerificaCodiceTelefono = (app: Express) => {
 
         if(!user) return RispondiToken(res, payload, "Utente non esiste", 400);
 
-        if(!user["Codice2FA"]){
+        if(!user["recupero"]){
             RispondiToken(res, payload, "Utente non ha richiesto la verifica", 400);
             return;
         }
 
-        smsClient.verify.v2.services('VA6fa29582cf50c72a6659a369a38ea1fc')
-        .verificationChecks
-        .create({to: `+39${user["telefono"]}`, code: codice})
-        .then((verification_check) => {
+        const url = `https://verify.twilio.com/v2/Services/VA9774fb566b94ad1bccbb6f7a7ae94698/VerificationCheck`;
+
+        const options = {
+        method: 'POST',
+        headers: {
+            Authorization: `Basic ${btoa(env["TWILIO_API_SID"] + ':' + env["TWILIO_API_SECRET"])}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            To: '+39' + user["telefono"],
+            Code: codice
+        })
+        };
+
+        fetch(url, options)
+        .then(response => response.json())
+        .then(verification_check => {
+            console.log(verification_check)
             if(verification_check.status == "approved")
             {
-                delete user["Codice2FA"]
+                delete user["recupero"]
                 delete user["_id"]
-
+                payload["2FA"] = true;
+            
                 driver.Replace({ username }, user)
                 .then(() => RispondiToken(res, payload, { ris : "ok"}))
                 .catch(() => RispondiToken(res, payload, "Errore nel salvataggio", 500))
             }
             else RispondiToken(res, payload, "Codice errato", 401)
         })
+        .catch(() => RispondiToken(res, payload, "Errore nella verifica", 500));
     })
 }
 

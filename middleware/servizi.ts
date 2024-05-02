@@ -1,6 +1,6 @@
 import { Express, Request, Response } from "express";
 import { MongoDriver } from "@bosio/mongodriver";
-import { DecifraToken, ControllaAdmin } from "../encrypt.js";
+import { DecifraToken, ControllaAdmin, GeneraPassword, CifraPwd } from "../encrypt.js";
 import { CaricaImmagine, DataInStringa, StringaInData, CaricaImmagineBase64 } from "../funzioni.js";
 import { RispondiToken } from "../strumenti.js";
 import { UploadApiResponse } from "cloudinary";
@@ -187,6 +187,11 @@ const AggiungiUtente = (app: Express) => {
         if(!(await ControllaAdmin(token, res))) return;
 
         const driver = new MongoDriver(env["STR_CONN"], env["DB_NAME"], "utenti");
+
+        const password = GeneraPassword();
+
+        utente["cambioPwd"] = "true";
+        utente["password"] = CifraPwd(password);
 
         const aggiunto = await driver.Inserisci(utente);
         if(driver.Errore(aggiunto, res)) return;
@@ -380,10 +385,27 @@ const PrendiConfigGrafici = (app: Express) => {
 
 }
 
+const NuovaPerizia = (app: Express) => {
+    app.post("/api/nuova-perizia", async (req: Request, res: Response) => {
+        const perizia = req.body;
+        const token = DecifraToken(req.headers.authorization!);
+
+        if(!(await ControllaAdmin(token, res))) return;
+
+        const driver = new MongoDriver(env["STR_CONN"], env["DB_NAME"], "perizie");
+
+        const aggiunta = await driver.Inserisci(perizia);
+        if(driver.Errore(aggiunta, res)) return;
+
+        RispondiToken(res, token, aggiunta)
+    })
+
+}
+
 export { PrendiUtenti, EliminaUtenti, ControllaAdmin, AggiornaUtente, 
          CaricaImmagineProfilo, ResetImmagineProfilo, AggiungiUtente,
          PrendiPerizia, PrendiOperatore, EliminaPerizia, PrendiIndirizzi,
          IndirizzoDaCoordinate, ModificaPerizia, CaricaImmaginePerizia,
          PrendiOperatori, PrendiPerizie, InfoUtente, StatisticheAdmin,
          PerizieUtente, PrendiConfigGrafici, CaricaImmagineBase64string,
-         CaricaPerizieDB };
+         CaricaPerizieDB, NuovaPerizia };

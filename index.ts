@@ -1,8 +1,5 @@
 import http from "http";
-import { MongoDriver } from "@bosio/mongodriver";
 import express, { Express } from "express";
-import env from "./ambiente.js";
-import { ReadFileAsync } from "./strumenti.js";
 
 import * as Richieste from "./middleware/base.js";
 import * as Cors from "./middleware/cors.js";
@@ -12,12 +9,6 @@ import * as Servizi from "./middleware/servizi.js";
 
 // APERTURA SERVER
 const app : Express = express();
-
-const [cert, key] = await Promise.all([
-    ReadFileAsync("./keys/certificate.crt"),
-    ReadFileAsync("./keys/private_key.pem")
-]);
-
 
 const server = http.createServer( app);
 
@@ -72,6 +63,7 @@ Servizi.PerizieUtente(app);
 Servizi.PrendiConfigGrafici(app);
 Servizi.CaricaImmagineBase64string(app);
 Servizi.CaricaPerizieDB(app);
+Servizi.NuovaPerizia(app);
 
 // gestione errori
 Errori.LoggingErrori(app);
