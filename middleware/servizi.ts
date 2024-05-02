@@ -30,7 +30,10 @@ const CaricaPerizieDB = (app: Express) => {
 
         const driver = new MongoDriver(env["STR_CONN"], env["DB_NAME"], "perizie");
 
-        const aggiunte = await driver.UpdateUno({"_id": perizia["_id"]}, {"$set": perizia}, true);
+        const _id = perizia["_id"];
+        delete perizia["_id"];
+
+        const aggiunte = await driver.Replace({ _id }, perizia);
         if(driver.Errore(aggiunte, res)) return;
 
         RispondiToken(res, token, aggiunte)
