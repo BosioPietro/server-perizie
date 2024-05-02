@@ -58,13 +58,13 @@ const LoginUtente = async (app : Express) => {
         {
             const dataToken: any = { username: user["username"], _id : user["_id"].toString() }
             if(user["ruolo"] == "Admin" || user["2FA"]){
-                dataToken["2FA"] = false;   
+                dataToken["2FA"] = true;   
             }
 
             const risposta: Record<string, any> = { "deveCambiare" : user["cambioPwd"] }
             if(user["ruolo"] == "Admin" || user["2FA"])
             {
-                risposta["2FA"] = false;   
+                risposta["2FA"] = true;   
             }
 
             RispondiToken(res, dataToken, risposta)
@@ -87,13 +87,13 @@ const LoginOAuth = async (app : Express) => {
 
         const dataToken: any = { username: user["username"], _id : user["_id"].toString() }
         if(user["ruolo"] == "Admin" || user["2FA"]){
-            dataToken["2FA"] = false;   
+            dataToken["2FA"] = true;   
         }
 
         const risposta: Record<string, any> = { "deveCambiare" : user["cambioPwd"] }
         if(user["ruolo"] == "Admin" || user["2FA"])
         {
-            risposta["2FA"] = false;   
+            risposta["2FA"] = true;   
         }
 
         RispondiToken(res, dataToken, risposta)
@@ -138,7 +138,7 @@ const RecuperoCredenziali = (app: Express) =>{
         
         const dataToken: any = { username: user["username"], _id : user["_id"].toString() }
         if(user["ruolo"] == "Admin" || user["2FA"]){
-            dataToken["2FA"] = false;   
+            dataToken["2FA"] = true;   
         }
 
         if(!user) return RispondiToken(res, dataToken, `User non esistente`, 400)
