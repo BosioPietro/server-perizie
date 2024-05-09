@@ -41,10 +41,11 @@ const AccessToken = async () => {
 
 //#endregion
 
-const [nuovaPassword, passwordCambiata, recuperoCredenziali] = await Promise.all([
+const [nuovaPassword, passwordCambiata, recuperoCredenziali, nuovoUtente] = await Promise.all([
     ReadFileAsync("./mail/nuovaPassword.html"), 
     ReadFileAsync("./mail/passwordCambiata.html"),
-    ReadFileAsync("./mail/recuperoCredenziali.html")
+    ReadFileAsync("./mail/recuperoCredenziali.html"),
+    ReadFileAsync("./mail/nuovoUtente.html")
 ]);
 
 const InviaMail = (opzioni : MailOptions) => new Promise<string>(async (resolve, reject) => {
@@ -95,4 +96,14 @@ const InviaMailRecupero = (email: string, username: string, codice: string) =>{
     return InviaMail(opzioni);
 }
 
-export { InviaMailNuovaPassword, InviaMailPasswordCambiata, InviaMailRecupero }
+const InviaMailNuovoUtente = (username: string, email: string, password: string) => {
+    const opzioni: MailOptions = {
+        from: env["EMAIL"],
+        to: email,
+        subject: "Registrazione effettuata",
+        html: nuovoUtente.replace("${username}", username).replace("${password}", password)
+    }
+    return InviaMail(opzioni);
+}
+
+export { InviaMailNuovaPassword, InviaMailPasswordCambiata, InviaMailRecupero, InviaMailNuovoUtente }

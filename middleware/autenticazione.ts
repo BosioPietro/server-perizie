@@ -50,6 +50,12 @@ const LoginUtente = async (app : Express) => {
     
         if(driver.Errore(user, res)) return;
         if(!user) return res.status(400).send("Username non esistente") 
+
+        console.log(password, user["password"])
+
+        console.log(user)
+        console.log(ConfrontaPwd(password, user["password"]))
+        console.log(user["password"])
     
         if(ConfrontaPwd(password, user["password"]))
         {
@@ -97,13 +103,13 @@ const LoginOAuth = async (app : Express) => {
         }
         
         if(user["ruolo"] == "Admin" || user["2FA"]){
-            dataToken["2FA"] = false;   
+            dataToken["2FA"] = !false;   
         }
 
         const risposta: Record<string, any> = { "deveCambiare" : user["cambioPwd"] }
         if(user["ruolo"] == "Admin" || user["2FA"])
         {
-            risposta["2FA"] = false;   
+            risposta["2FA"] = !false;   
         }
 
         RispondiToken(res, dataToken, risposta)

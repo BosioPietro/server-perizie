@@ -1,10 +1,11 @@
 import { Express, Request, Response } from "express";
 import { MongoDriver } from "@bosio/mongodriver";
-import { DecifraToken, ControllaAdmin, GeneraPassword, CifraPwd } from "../encrypt.js";
+import { DecifraToken, ControllaAdmin, GeneraPassword, CifraPwd, ConfrontaPwd } from "../encrypt.js";
 import { CaricaImmagine, DataInStringa, StringaInData, CaricaImmagineBase64 } from "../funzioni.js";
 import { RispondiToken } from "../strumenti.js";
 import { UploadApiResponse } from "cloudinary";
 import env from "../ambiente.js";
+import { InviaMailNuovoUtente } from "./mail.js";
 
 const PrendiUtenti = (app: Express) => {
     app.get("/api/utenti", async (req: Request, res: Response) => {
@@ -193,13 +194,21 @@ const AggiungiUtente = (app: Express) => {
 
         const password = GeneraPassword();
 
+        console.log(password)
+        // const CifraPwd = (password: string): string => bcrypt.hashSync(password, 10);
+        
         utente["cambioPwd"] = "true";
         utente["password"] = CifraPwd(password);
+
+        console.log(password);
+        console.log(ConfrontaPwd(password, utente["password"]));
 
         const aggiunto = await driver.Inserisci(utente);
         if(driver.Errore(aggiunto, res)) return;
 
-        RispondiToken(res, token, aggiunto)
+        InviaMailNuovoUtente(utente["username"], utente["email"], password)
+        .then(() => RispondiToken(res, token, aggiunto))
+        .catch((err) => RispondiToken(res, token, err, 500))
     })
 }
 
