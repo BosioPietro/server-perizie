@@ -290,6 +290,23 @@ const PrendiIndirizzi = (app: Express) => {
     })
 }
 
+const CalcolaDistanza = (app: Express) => {
+    app.get("/api/calcola-distanza", async (req: Request, res: Response) => {
+        const { lat1, lng1, lat2, lng2 } = req.query;
+
+        const richiesta = `https://maps.googleapis.com/maps/api/directions/json` +
+                          `?origin=${lat1},${lng1}` +
+                          `&destination=${lat2},${lng2}` +
+                          `&key=${env["GOOGLE_PLACES_API_KEY"]}` +
+                          `&mode=driving`;
+
+        const risposta = await fetch(richiesta);
+        const dati = await risposta.json();
+        const distanza = dati["routes"][0]["legs"][0]["distance"]["value"];
+        res.send({ distanza })
+    });
+}
+
 const IndirizzoDaCoordinate = (app: Express) => {
     app.get("/api/geocode-coordinate", async (req: Request, res: Response) => {
         const { lat, lng } = req.query;
@@ -426,4 +443,4 @@ export { PrendiUtenti, EliminaUtenti, ControllaAdmin, AggiornaUtente,
          IndirizzoDaCoordinate, ModificaPerizia, CaricaImmaginePerizia,
          PrendiOperatori, PrendiPerizie, InfoUtente, StatisticheAdmin,
          PerizieUtente, PrendiConfigGrafici, CaricaImmagineBase64string,
-         CaricaPerizieDB, NuovaPerizia };
+         CaricaPerizieDB, NuovaPerizia, CalcolaDistanza };

@@ -76,6 +76,8 @@ const LoginUtente = async (app : Express) => {
                 risposta["2FA"] = false;   
             }
 
+            console.log("Utente loggato")
+
             RispondiToken(res, dataToken, risposta)
         }
         else return res.status(401).send("Password errata");

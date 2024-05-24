@@ -1,7 +1,7 @@
 import cors from "cors";
 import { Express } from "express";
 
-const   CorsAperto = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => callback(null, true);
+const CorsAperto = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => callback(null, true);
 
 const whitelist : string[] = [
     "http://localhost:3000",

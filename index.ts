@@ -64,6 +64,7 @@ Servizi.PrendiConfigGrafici(app);
 Servizi.CaricaImmagineBase64string(app);
 Servizi.CaricaPerizieDB(app);
 Servizi.NuovaPerizia(app);
+Servizi.CalcolaDistanza(app);
 
 // gestione errori
 Errori.LoggingErrori(app);
