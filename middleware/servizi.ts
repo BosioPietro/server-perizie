@@ -36,7 +36,12 @@ const CaricaPerizieDB = (app: Express) => {
 
         const aggiunte = await driver.UpdateUno(
             { _id : driver.ID(_id) },
-            { $set: { "immagini" : perizia["immagini"], "elaborata" : true }}
+            { $set: 
+                { 
+                    "immagini" : perizia["immagini"], 
+                    "elaborata" : true ,
+                    "verificata": !("sospetta" in perizia)
+                }}
         );
         if(driver.Errore(aggiunte, res)) return;
 
